@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import requests
 from kerykeion import AstrologicalSubject, KerykeionChartSVG
 import matplotlib.pyplot as plt
@@ -6,6 +7,19 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import psycopg2
 from datetime import datetime
+
+# Debugging: Print the current working directory
+st.write("Current Working Directory:", os.getcwd())
+
+# Debugging: Print all secrets
+st.write("Secrets:", st.secrets)
+
+# Access the API key
+if "DEEPSEEK_API_KEY" in st.secrets:
+    deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
+    st.write("Deepseek API Key:", deepseek_api_key)
+else:
+    st.error("DEEPSEEK_API_KEY not found in secrets!")
 
 # Access secrets
 deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
