@@ -1,4 +1,5 @@
 import streamlit as st
+import os
 import requests
 import os
 from kerykeion import AstrologicalSubject, KerykeionChartSVG
@@ -10,6 +11,7 @@ from datetime import datetime
 from io import BytesIO
 import base64
 
+<<<<<<< HEAD
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 
@@ -43,6 +45,25 @@ database_url = st.secrets.get("DATABASE_URL", None)
 
 if not all([deepseek_api_key, kerykeion_api_key, database_url]):
     st.error("Missing API keys or database URL in secrets!")
+=======
+# Debugging: Print the current working directory
+st.write("Current Working Directory:", os.getcwd())
+
+# Debugging: Print all secrets
+st.write("Secrets:", st.secrets)
+
+# Access the API key
+if "DEEPSEEK_API_KEY" in st.secrets:
+    deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
+    st.write("Deepseek API Key:", deepseek_api_key)
+else:
+    st.error("DEEPSEEK_API_KEY not found in secrets!")
+
+# Access secrets
+deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
+kerykeion_api_key = st.secrets["KERYKEION_API_KEY"]
+database_url = st.secrets["DATABASE_URL"]
+>>>>>>> 8c724ac4 (updated horaclebot.py with import os and added lines for debugging secret.toml file)
 
 # Initialize session state for user data and token count
 if "token_count" not in st.session_state:

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 💬 Chatbot template
 
 A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
@@ -17,3 +18,6 @@ A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
    ```
    $ streamlit run streamlit_app.py
    ```
+=======
+#welcome message
+>>>>>>> 8c724ac4 (updated horaclebot.py with import os and added lines for debugging secret.toml file)
