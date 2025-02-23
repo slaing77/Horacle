@@ -1,2 +1,15 @@
 # .gitignore
 .streamlit/secrets.toml
+
+# Ignore virtual environment
+venv/
+.env/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore other common files
+*.log
+*.sqlite3
+*.pkl
