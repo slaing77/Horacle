@@ -1,0 +1,11 @@
+streamlit
+requests
+kerykeion
+psycopg2
+matplotlib
+reportlab
+weasyprint
+supabase
+nltk
+beautifulsoup4
+lxml
