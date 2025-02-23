@@ -53,13 +53,13 @@ def generate_response(prompt):
         "max_tokens": 200,
         "temperature": 0.7,
     }
-try:
-    response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=data)
-    response.raise_for_status()  # Raise error for HTTP failures
-    return response.json().get('choices', [{}])[0].get('message', {}).get('content', "No response available.")
-except requests.exceptions.RequestException as e:
-    st.error(f"API request failed: {e}")
-    return "Sorry, there was an issue retrieving the response."
+    try:
+        response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=data)
+        response.raise_for_status()  # Raise error for HTTP failures
+        return response.json().get('choices', [{}])[0].get('message', {}).get('content', "No response available.")
+    except requests.exceptions.RequestException as e:
+        st.error(f"API request failed: {e}")
+        return "Sorry, there was an issue retrieving the response."
 
 # Function to fetch horoscope from Kerykeion API
 def fetch_horoscope(name, year, month, day, hour, minute, city, period="daily"):
