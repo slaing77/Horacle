@@ -14,8 +14,7 @@ def main():
 
     if page == "Chat":
         st.header("Chat with Horacle")
-        user_input = st.text_input("You: ", "")
-        if user_input:
+        if user_input := st.text_input("You: ", ""):
             st.write(f"Horacle: You said: {user_input}")
 
     elif page == "Charts":
