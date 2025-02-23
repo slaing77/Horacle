@@ -7,12 +7,8 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 import psycopg2
 from datetime import datetime
-
-# Debugging: Print the current working directory
-st.write("Current Working Directory:", os.getcwd())
-
-# Debugging: Print all secrets
-st.write("Secrets:", st.secrets)
+from io import BytesIO
+import base64
 
 # Access the API key
 if "DEEPSEEK_API_KEY" in st.secrets:
@@ -22,15 +18,25 @@ else:
     st.error("DEEPSEEK_API_KEY not found in secrets!")
 
 # Access secrets
-deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
-kerykeion_api_key = st.secrets["KERYKEION_API_KEY"]
-database_url = st.secrets["DATABASE_URL"]
+deepseek_api_key = st.secrets["DEEPSEEK_API_KEY", None]
+kerykeion_api_key = st.secrets["KERYKEION_API_KEY", None]
+database_url = st.secrets["DATABASE_URL", None]
+
+if not all([deepseek_api_key, kerykeion_api_key, database_url]):
+    st.error("Missing API keys or database URL in secrets!")
 
 # Initialize session state for user data and token count
 if "user_data" not in st.session_state:
     st.session_state.user_data = {}
 if "token_count" not in st.session_state:
     st.session_state.token_count = 5  # Free threshold: 5 tokens
+def update_tokens(change):
+    st.session_state.token_count += change
+    st.write(f"New token count: {st.session_state.token_count}")
+
+if st.button("Buy 10 Tokens for $5"):
+    update_tokens(10)
+    
 
 # Function to generate responses using DeepSeek-V3
 def generate_response(prompt):
@@ -47,8 +53,13 @@ def generate_response(prompt):
         "max_tokens": 200,
         "temperature": 0.7,
     }
+try:
     response = requests.post("https://api.deepseek.com/v1/chat/completions", headers=headers, json=data)
-    return response.json()['choices'][0]['message']['content']
+    response.raise_for_status()  # Raise error for HTTP failures
+    return response.json().get('choices', [{}])[0].get('message', {}).get('content', "No response available.")
+except requests.exceptions.RequestException as e:
+    st.error(f"API request failed: {e}")
+    return "Sorry, there was an issue retrieving the response."
 
 # Function to fetch horoscope from Kerykeion API
 def fetch_horoscope(name, year, month, day, hour, minute, city, period="daily"):
@@ -67,11 +78,27 @@ def fetch_horoscope(name, year, month, day, hour, minute, city, period="daily"):
         "city": city,
         "period": period,
     }
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
         return response.json()
-    else:
+    except requests.exceptions.RequestException as e:
+        st.error(f"Horoscope request failed: {e}")
         return {"error": "Failed to fetch horoscope"}
+
+# Function to generate a  chart    
+def generate_chart(name, year, month, day, hour, minute, city, chart_type="Natal"):
+    subject = AstrologicalSubject(name, year, month, day, hour, minute, city)
+    chart = KerykeionChartSVG(subject, chart_type=chart_type)
+    svg_data = chart.makeSVG()
+
+    # Convert SVG to bytes and display
+    svg_bytes = BytesIO(svg_data.encode("utf-8"))
+    return svg_bytes
+
+if st.button("Generate Birth Chart"):
+    chart_svg = generate_chart(name, year, month, day, hour, minute, city, chart_type)
+    st.image(chart_svg, format="svg")  # Display SVG directly
 
 # Function to generate a birth chart
 def generate_birth_chart(name, year, month, day, hour, minute, city):
@@ -104,19 +131,29 @@ def generate_pdf(filename, content):
 
 # Function to deduct tokens
 def deduct_tokens(user_id, tokens):
-    conn = psycopg2.connect(database_url)
-    cursor = conn.cursor()
-    cursor.execute("""
-        UPDATE users
-        SET tokens = tokens - %s
-        WHERE id = %s
-    """, (tokens, user_id))
+    try:
+        with psycopg2.connect(database_url) as conn:
+            with conn.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE users
+                    SET tokens = tokens - %s
+                    WHERE id = %s
+                """, (tokens, user_id))
+                conn.commit()
+    except Exception as e:
+        st.error(f"Database error: {e}")
+
     conn.commit()
     conn.close()
 
+# Persistent token management
+def update_tokens(change):
+    st.session_state.token_count += change
+    st.write(f"New token count: {st.session_state.token_count}")
+
 # Streamlit app
 def main():
-    st.title("Horacle — Astrology Chatbot")
+    st.title("Horacle Your Astro-bot")
     st.sidebar.header("Navigation")
     page = st.sidebar.radio("Go to", ["Chat", "Charts", "Horoscope", "Tokens"])
 
@@ -160,6 +197,9 @@ def main():
         city = st.text_input("City of birth: ", "New York")
         period = st.selectbox("Select period:", ["daily", "weekly", "monthly", "yearly"])
         if st.button("Get Horoscope"):
+            with st.spinner("Fetching your horoscope..."):
+                horoscope = fetch_horoscope(name, year, month, day, hour, minute, city, period)
+                st.success("Horoscope retrieved!")
             horoscope = fetch_horoscope(name, year, month, day, hour, minute, city, period)
             if "error" in horoscope:
                 st.write("Sorry, I couldn't fetch your horoscope. Please try again later.")
