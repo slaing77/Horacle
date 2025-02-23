@@ -9,3 +9,4 @@ supabase
 nltk
 beautifulsoup4
 lxml
+openai
