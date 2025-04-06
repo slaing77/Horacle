@@ -2,6 +2,12 @@ streamlit
 requests
 kerykeion
 psycopg2
+pytz
+pytest
+pytest-mock
+pycountry
+Pillow
+swisseph
 matplotlib
 reportlab
 weasyprint

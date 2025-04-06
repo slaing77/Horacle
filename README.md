@@ -1,19 +1,16 @@
-# 💬 Chatbot template
+# 🔮 Horacle
 
-A simple Streamlit app that shows how to build a chatbot using OpenAI's GPT-3.5.
+Horacle is your personal astrology assistant built with Python & Streamlit.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://chatbot-template.streamlit.app/)
+## Features
+- Daily, Weekly, Monthly Horoscope
+- Birth, Synastry, Transit, and Relationship Charts
+- Visual SVG Charts & Downloadable PDFs
+- Session-based birth data storage
+- Token-based usage control
 
-### How to run it on your own machine
+## Run Locally
 
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+```bash
+pip install -r requirements.txt
+streamlit run horacle/app.py
