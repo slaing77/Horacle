@@ -8,7 +8,7 @@ matplotlib==3.8.3
 # swisseph==2.10.00   # ⚠️ Requires native build tools (skip on Streamlit Cloud)
 # kerykeion==1.3.0     # ⚠️ Depends on swisseph
 
-psycopg2
+psycopg2-binary==2.9.10
 pytz
 pytest
 pytest-mock
