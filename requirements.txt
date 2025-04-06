@@ -1,7 +1,13 @@
-streamlit
-requests
-# swisseph==2.10.00  # ⚠️ Native build, not Cloud-safe
-# kerykeion==1.3.0   # ⚠️ Depends on swisseph
+streamlit==1.33.0
+requests==2.31.0
+pycountry==22.3.5
+Pillow==10.2.0
+pytz==2024.1
+matplotlib==3.8.3
+
+# swisseph==2.10.00   # ⚠️ Requires native build tools (skip on Streamlit Cloud)
+# kerykeion==1.3.0     # ⚠️ Depends on swisseph
+
 psycopg2
 pytz
 pytest
