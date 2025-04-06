@@ -15,3 +15,5 @@ __pycache__/
 *.pkl
 
 
+.streamlit/secrets.toml
+.streamlit/secrets.toml
