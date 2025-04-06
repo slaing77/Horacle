@@ -41,11 +41,12 @@ def build_chart_payload(user: dict, partner: dict = None) -> dict:
 
 # Mapping of chart types to their respective API endpoints
 CHART_API_MAP = {
-    "natal": f"{API_BASE}/natal",
-    "synastry": f"{API_BASE}/synastry",
-    "composite": f"{API_BASE}/composite",
-    "transit": f"{API_BASE}/transit"
+    "birth-chart": "https://astrologer.p.rapidapi.com/api/v4/birth-chart",
+    "transit-chart": "https://astrologer.p.rapidapi.com/api/v4/transit-chart",
+    "synastry-chart": "https://astrologer.p.rapidapi.com/api/v4/synastry-chart",
+    "relationship-score": "https://astrologer.p.rapidapi.com/api/v4/relationship-score"
 }
+
 
 def fetch_chart(payload: dict, chart_type: str) -> dict:
     url = CHART_API_MAP.get(chart_type)

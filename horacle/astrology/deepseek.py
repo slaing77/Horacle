@@ -25,7 +25,7 @@ def generate_response(prompt: str) -> str:
     }
 
     try:
-        response = requests.post(DEEPSEEK_URL, headers=headers, json=data, timeout=10)
+        response = requests.post(DEEPSEEK_URL, headers=headers, json=data, timeout=60)
         response.raise_for_status()
         result: Dict = response.json()
 
@@ -37,4 +37,4 @@ def generate_response(prompt: str) -> str:
         # Defensive parsing
         return result.get("choices", [{}])[0].get("message", {}).get("content", "No response.")
     except Exception as e:
-        return f"🛑 API request failed. Please try again.\n\nError: {e}"
+        return f"🕒 The astrology AI is taking too long to respond. Please try again later.\n\nError: {e}"
