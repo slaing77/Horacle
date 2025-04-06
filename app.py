@@ -1,14 +1,16 @@
 import streamlit as st
+st.set_option("client.showErrorDetails", True)
 import requests
 
-# Access secrets
-deepseek_api_key = st.secrets["DEEPSEEK_API_KEY"]
-kerykeion_api_key = st.secrets["KERYKEION_API_KEY"]
-database_url = st.secrets["DATABASE_URL"]
+# Access secrets safely with fallback/defaults
+deepseek_api_key = st.secrets.get("DEEPSEEK_API_KEY", "")
+astrology_api_key = st.secrets.get("ASTROLOGY_API_KEY", "")
+database_url = st.secrets.get("DATABASE_URL", "")
+
 
 # Streamlit app
 def main():
-    st.title("Horacle — Astrology Chatbot")
+    st.title("🧭 Horacle has loaded")
     st.sidebar.header("Navigation")
     page = st.sidebar.radio("Go to", ["Chat", "Charts", "Horoscope"])
 
@@ -24,6 +26,10 @@ def main():
     elif page == "Horoscope":
         st.header("Get Your Personalized Horoscope")
         st.write("Horoscope generation will go here.")
+
+    if not all([deepseek_api_key, astrology_api_key, database_url]):
+        st.error("Missing one or more required secrets! Please check Streamlit Cloud → Settings → Secrets.")
+
 
 # Run the app
 if __name__ == "__main__":
