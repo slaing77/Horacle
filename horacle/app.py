@@ -1,9 +1,10 @@
 import streamlit as st
 import requests
+import logging
 from astrology.birth_form import birth_data_form
 from astrology.horoscope import fetch_horoscope_by_period
-from astrology.charts import fetch_chart, build_chart_payload
 from astrology.deepseek import generate_response
+from astrology.charts_local import generate_natal_chart_data  # ⬅️ New local chart
 
 # Enable error tracebacks
 st.set_option("client.showErrorDetails", True)
@@ -44,7 +45,8 @@ def main():
                         )
                     full_prompt = f"{context}{prompt}"
                     reply = generate_response(full_prompt)
-                st.markdown(f"**Horacle says:** {reply}")
+                st.markdown("### 🌠 Horacle says:")
+                st.markdown(f"<div style='white-space: pre-wrap; word-wrap: break-word;'>{reply}</div>", unsafe_allow_html=True)
             else:
                 st.warning("Please enter a question.")
 
@@ -70,94 +72,37 @@ def main():
         st.markdown("---")
         st.subheader("📤 Chart Actions")
 
-        # ♈ Natal Chart
-        if user_data and st.button("♈ Generate Natal Chart"):
+        if user_data and st.button("♈ Generate Natal Chart (Local)"):
             with st.spinner("Drawing your natal chart..."):
-                payload = build_chart_payload(user_data)
-                st.json(payload)  # DEBUG: Show payload
-                result = fetch_chart(payload, chart_type="birth-chart")
-                if "chart_svg" in result:
-                    st.image(result["chart_svg"])
-                    if "chart_pdf" in result:
-                        try:
-                            pdf_data = requests.get(result["chart_pdf"], timeout=10).content
-                            st.download_button(
-                                label="📄 Download Natal Chart PDF",
-                                data=pdf_data,
-                                file_name="natal_chart.pdf",
-                                mime="application/pdf"
-                            )
-                        except requests.RequestException:
-                            st.warning("Could not download PDF chart.")
-                else:
-                    st.error(result.get("error", "Could not generate natal chart."))
+                try:
+                    svg, planets, houses, aspects = generate_natal_chart_data(user_data)
 
-        # 🌌 Transit Chart
-        if user_data and st.button("🌌 Generate Transit Chart"):
-            with st.spinner("Calculating current transits..."):
-                payload = build_chart_payload(user_data)
-                result = fetch_chart(payload, chart_type="transit-chart")
-                if "chart_svg" in result:
-                    st.image(result["chart_svg"])
-                    if "chart_pdf" in result:
-                        try:
-                            pdf_data = requests.get(result["chart_pdf"], timeout=10).content
-                            st.download_button(
-                                label="📄 Download Transit Chart PDF",
-                                data=pdf_data,
-                                file_name="transit_chart.pdf",
-                                mime="application/pdf"
-                            )
-                        except requests.RequestException:
-                            st.warning("Could not download PDF chart.")
-                else:
-                    st.error(result.get("error", "Could not generate transit chart."))
+                    # Show SVG
+                    st.image(svg)
 
-        # ❤️ Synastry Chart
-        if user_data and partner_data and st.button("❤️ Generate Synastry Chart"):
-            with st.spinner("Mapping relationship energies..."):
-                payload = build_chart_payload(user_data, partner_data)
-                result = fetch_chart(payload, chart_type="synastry-chart")
-                if "chart_svg" in result:
-                    st.image(result["chart_svg"])
-                    if "chart_pdf" in result:
-                        try:
-                            pdf_data = requests.get(result["chart_pdf"], timeout=10).content
-                            st.download_button(
-                                label="📄 Download Synastry Chart PDF",
-                                data=pdf_data,
-                                file_name="synastry_chart.pdf",
-                                mime="application/pdf"
-                            )
-                        except requests.RequestException:
-                            st.warning("Could not download PDF chart.")
-                else:
-                    st.error(result.get("error", "Could not generate synastry chart."))
-
-        # 💞 Relationship Score
-        if user_data and partner_data and st.button("💞 Check Relationship Score"):
-            with st.spinner("Measuring compatibility..."):
-                payload = build_chart_payload(user_data, partner_data)
-                result = fetch_chart(payload, chart_type="relationship-score")
-                if "score" in result and "max_score" in result:
-                    st.metric(
-                        label="💖 Relationship Score",
-                        value=f"{result['score']} / {result['max_score']}"
+                    # Download button
+                    st.download_button(
+                        label="📥 Download Natal Chart SVG",
+                        data=svg,
+                        file_name="natal_chart.svg",
+                        mime="image/svg+xml"
                     )
-                    st.write(result.get("result", "No detailed interpretation provided."))
 
-                    try:
-                        score_percent = int(result['score']) / int(result['max_score']) * 100
-                        if score_percent > 80:
-                            st.success("💘 Excellent match!")
-                        elif score_percent > 50:
-                            st.info("💞 Promising connection.")
-                        else:
-                            st.warning("⚠️ Room for growth.")
-                    except (ValueError, ZeroDivisionError):
-                        st.warning("⚠️ Could not interpret compatibility score.")
-                else:
-                    st.error(result.get("error", "Could not calculate relationship score."))
+                    st.markdown("### 🌌 Planetary Positions")
+                    for name, info in planets.items():
+                        st.write(
+                            f"**{name}**: {info['sign']} {info['degree']}° ({info['element']}), House {info['house']}"
+                        )
+
+                    st.markdown("### 🏠 Houses")
+                    for i, deg in enumerate(houses, start=1):
+                        st.write(f"House {i}: {deg:.2f}°")
+
+                    st.markdown("### 🔗 Major Aspects")
+                    for aspect in aspects:
+                        st.write(f"{aspect[0]} {aspect[1]} {aspect[2]} (orb: {aspect[3]:.2f}°)")
+                except Exception as e:
+                    st.error(f"Failed to generate chart: {e}")
 
     # 🌟 Horoscope Page
     elif page == "Horoscope":
